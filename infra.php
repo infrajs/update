@@ -27,15 +27,24 @@ if ($path['fs']) {
 		unlink($path['data'].'update');
 		Access::$conf['test'] = true;
 		if (!Update::$is) {
-			header('Infrajs-Path-Update:true');
 			Path::fullrmdir($path['cache']);
 			Update::exec();
 		}
 	}	
 }
-
-if(!Access::adminTime()){
-	Update::exec();
+if (Access::test()&&!Update::$is) {
+	if (is_file('composer.lock')) {
+		$tu = filemtime('composer.lock');
+		$ta = Access::adminTime();
+		if (!$tu>$ta) {
+			Path::fullrmdir($path['cache']);
+			Update::exec();
+		}
+	}
+	if (!Access::adminTime()) {
+		Update::exec();
+	}
 }
+
 
 ?>
