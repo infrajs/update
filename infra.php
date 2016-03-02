@@ -17,7 +17,7 @@ if ($action) {
 	}
 }
 
-if ($path['fs']) {
+if ($path['fs']&&!Update::$is) {
 	if (!is_dir($path['cache'])) {
 		Access::$conf['test'] = true;
 		Update::exec();
@@ -30,22 +30,6 @@ if ($path['fs']) {
 			Update::exec();
 		}
 	}	
-}
-if (Access::test()&&!Update::$is) {
-	if (is_file('composer.lock')) {
-
-		$tu = filemtime('composer.lock');
-		
-		$ta = Access::adminTime(); //доступ к mem когад надо устанавлвать всё
-		
-		if (!$tu>$ta) {
-			Path::fullrmdir($path['cache']);
-			Update::exec();
-		}
-	}
-	if (!Access::adminTime()) {
-		Update::exec();
-	}
 }
 
 
