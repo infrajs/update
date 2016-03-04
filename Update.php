@@ -6,6 +6,9 @@ use infrajs\each\Each;
 
 class Update {
 	public static $is = false;
+	public static function init()
+	{
+	}
 	public static function update($name)
 	{
 		$conf = Config::get($name);
