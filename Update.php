@@ -11,7 +11,7 @@ class Update {
 	public static function init()
 	{
 		$action = Ans::GET('-update');
-		$path = Config::get('path');
+		$path = Path::$conf;
 		if ($action) {
 			Access::test(true);
 			if (!Update::$is) {
