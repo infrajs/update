@@ -13,6 +13,7 @@ class Update {
 	{
 		Once::exec(__FILE__.'init', function () {
 			$action = Ans::GET('-update');
+			Config::init();
 			$path = Path::$conf;
 			if ($action) {
 				Access::test(true);
