@@ -4,36 +4,47 @@ use infrajs\config\Config;
 use infrajs\path\Path;
 use infrajs\each\Each;
 use infrajs\ans\Ans;
+use infrajs\once\Once;
 use infrajs\access\Access;
 
 class Update {
 	public static $is = false;
 	public static function init()
 	{
-		$action = Ans::GET('-update');
-		$path = Path::$conf;
-		if ($action) {
-			Access::test(true);
-			if (!Update::$is) {
-				Path::fullrmdir($path['cache']);
-				Update::exec();
-			}
-		}
-
-		if ($path['fs']&&!Update::$is) {
-			if (!is_dir($path['cache'])) {
-				Access::$conf['test'] = true;
-				Update::exec();
-			}
-			if(is_file($path['data'].'update')) {
-				unlink($path['data'].'update');
-				Access::$conf['test'] = true;
+		Once::exec(__FILE__.'init', function () {
+			$action = Ans::GET('-update');
+			Config::init();
+			$path = Path::$conf;
+			if ($action) {
+				Access::test(true);
 				if (!Update::$is) {
 					Path::fullrmdir($path['cache']);
 					Update::exec();
 				}
-			}	
-		}
+			}
+
+			if ($path['fs'] && !Update::$is) {
+				if (!is_dir($path['cache'])) {
+					Access::$conf['test'] = true;
+					Update::exec();
+				}
+				if (Access::isTest()) {
+					if (is_file($path['data'].'update')) {
+						unlink($path['data'].'update');
+						Access::$conf['test'] = true;
+						if (!Update::$is) {
+							Path::fullrmdir($path['cache']);
+							Update::exec();
+						}
+					}
+				}
+			}
+			if (Update::$is) {
+				if(is_file($path['data'].'update')) {
+					unlink($path['data'].'update');
+				}
+			}
+		});
 	}
 	public static function update($name)
 	{
