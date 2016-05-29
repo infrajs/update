@@ -1,5 +1,5 @@
 {
-	"tester":"test.php",
+	"tester":"tester.php",
 	"dependencies":["path","mem"],
 	"update":"update-self.php"
 }

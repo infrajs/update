@@ -23,6 +23,7 @@ class Update {
 				}
 			}
 
+
 			if ($path['fs'] && !Update::$is) {
 				if (!is_dir($path['cache'])) {
 					Access::$conf['test'] = true;
