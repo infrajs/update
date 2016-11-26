@@ -50,10 +50,12 @@ class Update {
 	public static function update($name)
 	{
 		$conf = Config::get($name);
-		Each::exec($conf['dependencies'], function ($name) {
+		Each::exec($conf['dependencies'], function &($name) {
+			$r = null;
 			Update::update($name);
+			return $r;
 		});
-		if ($conf['update']) {
+		if (!empty($conf['update'])) {
 			Path::req('-'.$name.'/'.$conf['update']);
 		}
 	}
