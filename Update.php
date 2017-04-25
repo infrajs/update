@@ -49,15 +49,17 @@ class Update {
 	}
 	public static function update($name)
 	{
-		$conf = Config::get($name);
-		Each::exec($conf['dependencies'], function &($name) {
-			$r = null;
-			Update::update($name);
-			return $r;
-		});
-		if (!empty($conf['update'])) {
-			Path::req('-'.$name.'/'.$conf['update']);
-		}
+		Once::exec(__FILE__.'update', function ($name) {
+			$conf = Config::get($name);
+			Each::exec($conf['dependencies'], function &($name) {
+				$r = null;
+				Update::update($name);
+				return $r;
+			});
+			if (!empty($conf['update'])) {
+				Path::req('-'.$name.'/'.$conf['update']);
+			}
+		}, array($name));
 	}
 	public static function exec()
 	{
@@ -67,16 +69,16 @@ class Update {
 				Path::req('-'.$name.'/'.$value);
 			});
 		}
+
 		Update::$is = true;
 		//Пр появлении нового Config::get будет проверяться свойство update
 		
 		//Но нужно установить то что уже было установлено
 		$conf = Config::$conf;
-
-		foreach($conf as $name => $v) {	
+		
+		foreach ($conf as $name => $v) {
 			Update::update($name);
 		}
-
 		//И вообще всё установить нужно что ещё не установлено
 		Config::get();
 	}
