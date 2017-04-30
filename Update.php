@@ -9,57 +9,55 @@ use infrajs\access\Access;
 
 class Update {
 	public static $is = false;
-	public static function init()
+	public static function check()
 	{
-		Once::exec(__FILE__.'init', function () {
-			$action = Ans::GET('-update');
-			Config::init();
-			$path = Path::$conf;
-			if ($action) {
-				Access::test(true);
-				if (!Update::$is) {
-					Path::fullrmdir($path['cache']);
-					Update::exec();
-				}
+		if (Once::omit(__FILE__.'check')) return;	
+		$action = Ans::GET('-update');
+		$path = Path::$conf;
+		if ($action) {
+			Access::test(true);
+			if (!Update::$is) {
+				Path::fullrmdir($path['cache']);
+				Update::exec();
 			}
+		}
+		
 
-
-			if ($path['fs'] && !Update::$is) {
-				if (!is_dir($path['cache'])) {
+		if ($path['fs'] && !Update::$is) {
+			if (!is_dir($path['cache'])) {
+				Access::$conf['test'] = true;
+				Update::exec();
+			}
+			if (Access::isTest()) {
+				if (is_file($path['data'].'update')) {
+					unlink($path['data'].'update');
 					Access::$conf['test'] = true;
-					Update::exec();
-				}
-				if (Access::isTest()) {
-					if (is_file($path['data'].'update')) {
-						unlink($path['data'].'update');
-						Access::$conf['test'] = true;
-						if (!Update::$is) {
-							Path::fullrmdir($path['cache']);
-							Update::exec();
-						}
+					if (!Update::$is) {
+						Path::fullrmdir($path['cache']);
+						Update::exec();
 					}
 				}
 			}
-			if (Update::$is) {
-				if(is_file($path['data'].'update')) {
-					unlink($path['data'].'update');
-				}
+		}
+
+		if (Update::$is) {
+			if(is_file($path['data'].'update')) {
+				unlink($path['data'].'update');
 			}
-		});
+		}
 	}
 	public static function update($name)
 	{
-		Once::exec(__FILE__.'update', function ($name) {
-			$conf = Config::get($name);
-			Each::exec($conf['dependencies'], function &($name) {
-				$r = null;
-				Update::update($name);
-				return $r;
-			});
-			if (!empty($conf['update'])) {
-				Path::req('-'.$name.'/'.$conf['update']);
-			}
-		}, array($name));
+		if (Once::omit(__FILE__.'update', array($name))) return;
+		$conf = Config::get($name);
+		Each::exec($conf['dependencies'], function &($name) {
+			$r = null;
+			Update::update($name);
+			return $r;
+		});
+		if (!empty($conf['update'])) {
+			Path::req('-'.$name.'/'.$conf['update']);
+		}
 	}
 	public static function exec()
 	{

@@ -1,5 +1,6 @@
 {
 	"tester":"tester.php",
+	"require":"infra.php",
 	"dependencies":["path","mem"],
 	"update":"update-self.php"
 }
