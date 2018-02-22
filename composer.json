@@ -2,7 +2,6 @@
 	"name": "infrajs/update",
 	"homepage":"https://github.com/infrajs/update",
 	"description":"Auto install plugins. Update propertie in config",
-	"license": "GPL3",
 	"autoload": {
 		"psr-4": { "infrajs\\update\\": "" }
 	},
