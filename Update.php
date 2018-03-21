@@ -24,7 +24,7 @@ class Update {
 			
 
 			if ($path['fs'] && !Update::$is) {
-				if (!is_dir($path['cache'])) {
+				if (!is_dir($path['cache']) || !is_file($path['cache'].'/.infra.json')) {
 					Access::$conf['test'] = true;
 					Update::exec();
 				}
