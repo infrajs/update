@@ -51,6 +51,7 @@ class Update {
 	{
 		Once::func( function ($name){
 			$conf = Config::get($name);
+			if (!empty($conf['off'])) return;
 			Each::exec($conf['dependencies'], function &($name) {
 				$r = null;
 				Update::update($name);
@@ -66,6 +67,7 @@ class Update {
 		if (!Update::$is) {
 			Config::add('update', function ($name, $value, $conf) {
 				if (!Update::$is) return;
+				//if (!empty($conf['off'])) return;
 				Path::req('-'.$name.'/'.$value);
 			});
 		}
