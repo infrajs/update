@@ -4,63 +4,67 @@ use infrajs\config\Config;
 use infrajs\path\Path;
 use infrajs\each\Each;
 use infrajs\ans\Ans;
-use infrajs\once\Once;
 use infrajs\access\Access;
 
 class Update {
 	public static $is = false;
+	public static $once = array();
 	public static function check()
 	{
-		Once::func(function (){
-			$action = Ans::GET('-update');
-			$path = Path::$conf;
-			if ($action) {
-				Access::test(true);
-				if (!Update::$is) {
-					Path::fullrmdir($path['cache']);
-					Update::exec();
-				}
-			}
-			
+		$key = 'check:';
+		if (isset(Update::$once[$key])) return Update::$once[$key];
+		Update::$once[$key] = true;
 
-			if ($path['fs'] && !Update::$is) {
-				if (!is_dir($path['cache']) || !is_file($path['cache'].'/.infra.json')) {
+		$action = Ans::GET('-update');
+		$path = Path::$conf;
+		if ($action) {
+			Access::test(true);
+			if (!Update::$is) {
+				Path::fullrmdir($path['cache']);
+				Update::exec();
+			}
+		}
+		
+
+		if ($path['fs'] && !Update::$is) {
+			if (!is_dir($path['cache']) || !is_file($path['cache'].'/.infra.json')) {
+				Access::$conf['test'] = true;
+				Update::exec();
+			}
+			if (Access::isTest()) {
+				if (is_file($path['data'].'update')) {
+					unlink($path['data'].'update');
 					Access::$conf['test'] = true;
-					Update::exec();
-				}
-				if (Access::isTest()) {
-					if (is_file($path['data'].'update')) {
-						unlink($path['data'].'update');
-						Access::$conf['test'] = true;
-						if (!Update::$is) {
-							Path::fullrmdir($path['cache']);
-							Update::exec();
-						}
+					if (!Update::$is) {
+						Path::fullrmdir($path['cache']);
+						Update::exec();
 					}
 				}
 			}
+		}
 
-			if (Update::$is) {
-				if(is_file($path['data'].'update')) {
-					unlink($path['data'].'update');
-				}
+		if (Update::$is) {
+			if(is_file($path['data'].'update')) {
+				unlink($path['data'].'update');
 			}
-		});
+		}
 	}
 	public static function update($name)
 	{
-		Once::func( function ($name){
-			$conf = Config::get($name);
-			if (!empty($conf['off'])) return;
-			Each::exec($conf['dependencies'], function &($name) {
-				$r = null;
-				Update::update($name);
-				return $r;
-			});
-			if (!empty($conf['update'])) {
-				Path::req('-'.$name.'/'.$conf['update']);
-			}
-		}, [$name]);
+		$key = 'update:'.$name;
+		if (isset(Update::$once[$key])) return Update::$once[$key];
+		Update::$once[$key] = true;
+		
+		$conf = Config::get($name);
+		if (!empty($conf['off'])) return;
+		Each::exec($conf['dependencies'], function &($name) {
+			$r = null;
+			Update::update($name);
+			return $r;
+		});
+		if (!empty($conf['update'])) {
+			Path::req('-'.$name.'/'.$conf['update']);
+		}
 	}
 	public static function exec()
 	{
